@@ -1,8 +1,12 @@
 <resources>
 
     <string name="app_name">android-opengl</string>
-    <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="loadMesh_button">Załaduj siatkę</string>
+    <string name="addMesh_button">Dodaj siatkę</string>
+    <string name="options_button">Opcje</string>
+    <string name="exit_button">Zamknij program</string>
+    <string name="copyright_text">Copyright nowakop1</string>
 
 </resources>
