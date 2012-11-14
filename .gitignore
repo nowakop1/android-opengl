@@ -1,0 +1,6 @@
+#Ignore this files or directories
+
+/target/ #ignore directory
+
+
+bin/
