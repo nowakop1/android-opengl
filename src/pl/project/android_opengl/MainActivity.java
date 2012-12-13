@@ -33,6 +33,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
 				
 				filesManager.openFile(filesManager.getSelectedFile());
 				OBJParser parser = new OBJParser(filesManager);
+				parser.parse();
 				
 				Log.d("openFile", filesManager.getSelectedFile());	
 			}
