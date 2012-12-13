@@ -32,7 +32,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
 			public void onClick(View v) {
 				
 				filesManager.openFile(filesManager.getSelectedFile());
-				OBJParser parser = new OBJParser(filesManager);
+				OBJParser parser = new OBJParser(filesManager, getApplicationContext());
 				parser.parse();
 				
 				Log.d("openFile", filesManager.getSelectedFile());	
