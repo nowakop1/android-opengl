@@ -15,7 +15,10 @@ import android.os.Debug;
 import android.util.Log;
 import android.widget.Toast;
 
+import pl.project.model.DataStructure;
 import pl.project.model.FaceIndex;
+import pl.project.model.Model;
+import pl.project.model.Vertex;
 
 public class OBJParser {
 	
@@ -24,9 +27,10 @@ public class OBJParser {
 	private FilesManager filesManager;
 	private File openFile;
 	
-	List<Vector<Float>>	positions = new ArrayList<Vector<Float>>();
+	Vector<Float> positions = new Vector<Float>();
 	List<Vector<Float>>	normals = new ArrayList<Vector<Float>>();
 	List<FaceIndex> faces = new ArrayList<FaceIndex>();
+	Model model = new Model();
 	
 	public OBJParser(FilesManager filesManager, Context context) {
 		this.filesManager = filesManager;
@@ -60,6 +64,12 @@ public class OBJParser {
 						line = line.substring(1);
 						readFaces(line.trim());
 					}
+					
+					model.setVertices(positions);
+					model.setIndices(faces);
+					
+					DataStructure.setModel(model);
+					
 				} catch(NullPointerException e) {
 					e.printStackTrace();
 					System.out.println("B³êdny format pliku");
@@ -73,7 +83,7 @@ public class OBJParser {
 			System.out.println("Nie mo¿na odczytaæ pliku");
 		}
 		
-		Toast toast = Toast.makeText(context, "Parsowanie zakoñczone", Toast.LENGTH_SHORT);
+		Toast toast = Toast.makeText(context, "Parsowanie zakoñczone!", Toast.LENGTH_SHORT);
 		toast.show();
 		System.out.println("Parsowanie zakoñczone");
 	}
@@ -82,9 +92,9 @@ public class OBJParser {
 		Log.d("readFaces", "czytam");
 		
 		String [] tokens = line.split("[ ]+");
-		List<Integer> verticesIndex = new ArrayList<Integer>();
-		List<Integer> texturesIndex = new ArrayList<Integer>();
-		List<Integer> normalsIndex = new ArrayList<Integer>();
+		List<Short> verticesIndex = new ArrayList<Short>();
+		List<Short> texturesIndex = new ArrayList<Short>();
+		List<Short> normalsIndex = new ArrayList<Short>();
 		FaceIndex faceIndex = new FaceIndex();
 		
 		for(String token : tokens) {
@@ -92,20 +102,20 @@ public class OBJParser {
 			String [] tempTokens = fixToken.split("/");
 			
 			if(tempTokens.length == 1) {
-				verticesIndex.add(Integer.parseInt(tempTokens[0]));
+				verticesIndex.add(Short.parseShort(tempTokens[0]));
 			} else if(tempTokens.length == 2) {
-				verticesIndex.add(Integer.parseInt(tempTokens[0]));
-				texturesIndex.add(Integer.parseInt(tempTokens[1]));
+				verticesIndex.add(Short.parseShort(tempTokens[0]));
+				texturesIndex.add(Short.parseShort(tempTokens[1]));
 				
 			} else if(tempTokens.length == 3){
-				verticesIndex.add(Integer.parseInt(tempTokens[0]));
-				texturesIndex.add(Integer.parseInt(tempTokens[1]));
-				normalsIndex.add(Integer.parseInt(tempTokens[2]));
+				verticesIndex.add(Short.parseShort(tempTokens[0]));
+				texturesIndex.add(Short.parseShort(tempTokens[1]));
+				normalsIndex.add(Short.parseShort(tempTokens[2]));
 				
 				System.out.println(tempTokens[0] + ", " + tempTokens[1] + ", " + tempTokens[2]);
 			}
 		}
-		int [] temp = new int[tokens.length];
+		Short [] temp = new Short[tokens.length];
 		
 		temp = copyToIntArray(verticesIndex);
 		faceIndex.setPositionIndex(temp);
@@ -123,14 +133,12 @@ public class OBJParser {
 		Log.d("readVertices", "czytam");
 			
 		String [] tokens = line.split("[ ]+");
-		Vector<Float> vertex = new Vector<Float>();
 		
 		for(String token : tokens) {
 			System.out.println(token);
-			vertex.add(Float.parseFloat(token));
+			positions.add(Float.parseFloat(token));
 		}
-		
-		positions.add(vertex);		
+			
 		//System.out.println(vertex.toString());
 	}
 
@@ -148,9 +156,9 @@ public class OBJParser {
 		System.out.println(normal.toString());
 	}
 	
-	private int[] copyToIntArray(List<Integer> list) {
+	private Short[] copyToIntArray(List<Short> list) {
 		
-		int [] intArray = new int[list.size()];
+		Short [] intArray = new Short[list.size()];
 		
 		for(int i = 0; i < list.size(); i++) {
 			intArray[i] = list.get(i);

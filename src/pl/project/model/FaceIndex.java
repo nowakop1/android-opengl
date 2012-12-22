@@ -2,35 +2,35 @@ package pl.project.model;
 
 public class FaceIndex {
 	
-	private int [] positionIndex;
-	private int [] textureIndex;
-	private int [] normalIndex;
+	private Short [] positionIndex;
+	private Short [] textureIndex;
+	private Short [] normalIndex;
 	
 	public FaceIndex() {
 		
 	}
 
-	public int [] getPositionIndex() {
+	public Short [] getPositionIndex() {
 		return positionIndex;
 	}
 
-	public void setPositionIndex(int [] positionIndex) {
+	public void setPositionIndex(Short [] positionIndex) {
 		this.positionIndex = positionIndex;
 	}
 
-	public int [] getTextureIndex() {
+	public Short [] getTextureIndex() {
 		return textureIndex;
 	}
 
-	public void setTextureIndex(int [] textureIndex) {
+	public void setTextureIndex(Short [] textureIndex) {
 		this.textureIndex = textureIndex;
 	}
 
-	public int [] getNormalIndex() {
+	public Short [] getNormalIndex() {
 		return normalIndex;
 	}
 
-	public void setNormalIndex(int [] normalIndex) {
+	public void setNormalIndex(Short [] normalIndex) {
 		this.normalIndex = normalIndex;
 	}
 

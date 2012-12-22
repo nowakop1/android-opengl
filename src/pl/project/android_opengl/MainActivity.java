@@ -2,6 +2,9 @@ package pl.project.android_opengl;
 
 import pl.project.io.FilesManager;
 import pl.project.io.OBJParser;
+import pl.project.model.Model;
+import pl.project.render.MyRenderer;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -11,11 +14,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.app.Activity;
+import android.content.Intent;
 
 public class MainActivity extends Activity implements OnItemSelectedListener{
 	
 	private String [] items;
 	private FilesManager filesManager;
+	private Model model;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,6 +39,11 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
 				filesManager.openFile(filesManager.getSelectedFile());
 				OBJParser parser = new OBJParser(filesManager, getApplicationContext());
 				parser.parse();
+								
+				Intent i = new Intent();
+				i.setClass(getBaseContext(), SceneryView.class);
+				
+				startActivity(i);
 				
 				Log.d("openFile", filesManager.getSelectedFile());	
 			}
