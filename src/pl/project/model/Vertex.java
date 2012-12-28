@@ -1,39 +1,21 @@
 package pl.project.model;
 
-import java.util.Vector;
-
 public class Vertex {
 	
-	private Vector<Float> position;
-	private Vector<Float> texture;
-	private Vector<Float> normal;
+	private float [] position = new float[3];
+	private float [] texture =  new float[3];
+	private float [] normal = new float[3];
 	
-	public Vertex() {
-		
-	}
-	
-	public Vector<Float> getPosition() {
+	public float [] getPosition() {
 		return position;
 	}
-	
-	public void setPosition(Vector<Float> position) {
-		this.position = position;
-	}
 
-	public Vector<Float> getTexture() {
+	public float [] getTexture() {
 		return texture;
 	}
 
-	public void setTexture(Vector<Float> texture) {
-		this.texture = texture;
-	}
-
-	public Vector<Float> getNormal() {
+	public float [] getNormal() {
 		return normal;
 	}
-
-	public void setNormal(Vector<Float> normal) {
-		this.normal = normal;
-	}
-	
+		
 }

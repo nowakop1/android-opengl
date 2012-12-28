@@ -1,19 +1,34 @@
 package pl.project.model;
 
+import java.util.Vector;
+
 public class Face {
 	
-	private Vertex [] vertices;
+	private Vector<Short> vPointers = new Vector<Short>();
+	private Vector<Short> vtPointers = new Vector<Short>();
+	private Vector<Short> vnPointers = new Vector<Short>();
 	
-	public Face() {
-		
+	public Vector<Short> getvPointers() {
+		return vPointers;
 	}
-
-	public Vertex [] getVertices() {
-		return vertices;
+	
+	public void addvPointer(Short pointer) {
+		vPointers.add(pointer);
 	}
-
-	public void setVertices(Vertex [] vertices) {
-		this.vertices = vertices;
+	
+	public Vector<Short> getVtPointers() {
+		return vtPointers;
 	}
-
+	
+	public void addVtPointer(Short pointer){
+		vtPointers.add(pointer);
+	}
+	
+	public Vector<Short> getVnPointers() {
+		return vnPointers;
+	}
+	
+	public void addVnPointer(Short pointer) {
+		vnPointers.add(pointer);
+	}	
 }

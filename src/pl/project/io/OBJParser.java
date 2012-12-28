@@ -6,19 +6,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
 
 import android.content.Context;
 import android.os.Debug;
-import android.util.Log;
 import android.widget.Toast;
 
 import pl.project.model.DataStructure;
-import pl.project.model.FaceIndex;
+import pl.project.model.Face;
 import pl.project.model.Model;
-import pl.project.model.Vertex;
 
 public class OBJParser {
 	
@@ -27,10 +22,7 @@ public class OBJParser {
 	private FilesManager filesManager;
 	private File openFile;
 	
-	Vector<Float> positions = new Vector<Float>();
-	List<Vector<Float>>	normals = new ArrayList<Vector<Float>>();
-	List<FaceIndex> faces = new ArrayList<FaceIndex>();
-	Model model = new Model();
+	Model model;
 	
 	public OBJParser(FilesManager filesManager, Context context) {
 		this.filesManager = filesManager;
@@ -65,9 +57,7 @@ public class OBJParser {
 						readFaces(line.trim());
 					}
 					
-					model.setVertices(positions);
-					model.setIndices(faces);
-					
+					model = new Model();
 					DataStructure.setModel(model);
 					
 				} catch(NullPointerException e) {
@@ -86,85 +76,50 @@ public class OBJParser {
 		Toast toast = Toast.makeText(context, "Parsowanie zakoñczone!", Toast.LENGTH_SHORT);
 		toast.show();
 		System.out.println("Parsowanie zakoñczone");
+		Debug.stopMethodTracing();
 	}
 
 	private void readFaces(String line) {
-		Log.d("readFaces", "czytam");
 		
 		String [] tokens = line.split("[ ]+");
-		List<Short> verticesIndex = new ArrayList<Short>();
-		List<Short> texturesIndex = new ArrayList<Short>();
-		List<Short> normalsIndex = new ArrayList<Short>();
-		FaceIndex faceIndex = new FaceIndex();
+		Face face = new Face();
 		
 		for(String token : tokens) {
 			String fixToken = token.replaceAll("//", "/0/");
 			String [] tempTokens = fixToken.split("/");
 			
 			if(tempTokens.length == 1) {
-				verticesIndex.add(Short.parseShort(tempTokens[0]));
+				face.addvPointer(Short.parseShort(tempTokens[0]));
 			} else if(tempTokens.length == 2) {
-				verticesIndex.add(Short.parseShort(tempTokens[0]));
-				texturesIndex.add(Short.parseShort(tempTokens[1]));
+				face.addvPointer(Short.parseShort(tempTokens[0]));
+				face.addVtPointer(Short.parseShort(tempTokens[1]));
 				
 			} else if(tempTokens.length == 3){
-				verticesIndex.add(Short.parseShort(tempTokens[0]));
-				texturesIndex.add(Short.parseShort(tempTokens[1]));
-				normalsIndex.add(Short.parseShort(tempTokens[2]));
-				
-				System.out.println(tempTokens[0] + ", " + tempTokens[1] + ", " + tempTokens[2]);
+				face.addvPointer(Short.parseShort(tempTokens[0]));
+				face.addVtPointer(Short.parseShort(tempTokens[1]));
+				face.addVnPointer(Short.parseShort(tempTokens[2]));
 			}
 		}
-		Short [] temp = new Short[tokens.length];
-		
-		temp = copyToIntArray(verticesIndex);
-		faceIndex.setPositionIndex(temp);
-		temp = copyToIntArray(texturesIndex);
-		faceIndex.setTextureIndex(temp);
-		temp = copyToIntArray(normalsIndex);
-		faceIndex.setNormalIndex(temp);
-		
-		System.out.println(faceIndex.getPositionIndex()[0] + " " + faceIndex.getPositionIndex()[1] + " " + faceIndex.getPositionIndex()[2]);
-		
-		faces.add(faceIndex);
+		System.out.println("Positions: " + face.getvPointers());
+		System.out.println("Normals: " + face.getVnPointers());
+		DataStructure.getFaces().add(face);
 	}
 
-	private void readVertices(String line) {
-		Log.d("readVertices", "czytam");
-			
+	private void readVertices(String line) {			
 		String [] tokens = line.split("[ ]+");
 		
 		for(String token : tokens) {
-			System.out.println(token);
-			positions.add(Float.parseFloat(token));
+			System.out.println("Position: " + token);
+			DataStructure.getPositions().add(Float.parseFloat(token));		//d³ugi wektor (wszystkie pozycje)
 		}
-			
-		//System.out.println(vertex.toString());
 	}
 
-	private void readNormals(String line) {
-		Log.d("readNormals", "czytam");
-		
+	private void readNormals(String line) {		
 		String [] tokens = line.split("[ ]+");
-		Vector<Float> normal = new Vector<Float>();
 		
 		for(String token : tokens) {
-			normal.add(Float.parseFloat(token));
+			System.out.println("Normal: " + token);
+			DataStructure.getNormals().add(Float.parseFloat(token));		//d³ugi wektor (wszystkie normalne)
 		}
-		
-		normals.add(normal);
-		System.out.println(normal.toString());
 	}
-	
-	private Short[] copyToIntArray(List<Short> list) {
-		
-		Short [] intArray = new Short[list.size()];
-		
-		for(int i = 0; i < list.size(); i++) {
-			intArray[i] = list.get(i);
-		}
-		
-		return intArray;
-	}
-
 }

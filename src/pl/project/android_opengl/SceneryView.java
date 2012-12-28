@@ -5,38 +5,34 @@ import pl.project.model.Model;
 import pl.project.render.MyRenderer;
 
 import android.app.Activity;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 
 public class SceneryView extends Activity {
 	
-	private GLSurfaceView glSurface;
-	
+	private MyRenderer myRender;
+		
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		Model model = DataStructure.getModel();
 		model.buildVertexBuffer();
-//		model.buildColorBuffer();
 		model.buildFaceBuffer();
 		
-		MyRenderer myRender = new MyRenderer(model);
+		myRender = new MyRenderer(getApplicationContext(), model);
 
-		glSurface = new GLSurfaceView(this);
-		glSurface.setRenderer(myRender);
-		setContentView(glSurface);
+		setContentView(myRender);
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
-		glSurface.onResume();
+		myRender.onResume();
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		glSurface.onPause();
+		myRender.onPause();
 	}
 }
