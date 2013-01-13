@@ -6,6 +6,7 @@ import pl.project.model.Model;
 import pl.project.render.MyRenderer;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Debug;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -35,6 +36,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
         
         openFileButton.setOnClickListener(new View.OnClickListener() {			
 			public void onClick(View v) {
+				Debug.startMethodTracing("loader");
 				
 				filesManager.openFile(filesManager.getSelectedFile());
 				OBJParser parser = new OBJParser(filesManager, getApplicationContext());

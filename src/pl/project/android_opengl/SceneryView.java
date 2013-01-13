@@ -14,12 +14,8 @@ public class SceneryView extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		Model model = DataStructure.getModel();
-		model.buildVertexBuffer();
-		model.buildFaceBuffer();
-		
-		myRender = new MyRenderer(getApplicationContext(), model);
+				
+		myRender = new MyRenderer(getApplicationContext());
 
 		setContentView(myRender);
 	}

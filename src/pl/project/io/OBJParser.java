@@ -22,6 +22,14 @@ public class OBJParser {
 	private FilesManager filesManager;
 	private File openFile;
 	
+	private String [] tokens;
+	private Face face;
+	private float value;
+	
+	private int numberOfVertices = 0;
+	private int numberOfNormals = 0;
+	private int numberOfFaces = 0;
+	
 	Model model;
 	
 	public OBJParser(FilesManager filesManager, Context context) {
@@ -32,7 +40,7 @@ public class OBJParser {
 	}
 	
 	public void parse() {
-		Debug.startMethodTracing();
+		long time1 = System.currentTimeMillis();
 		
 		BufferedReader reader;
 		String line;
@@ -40,10 +48,10 @@ public class OBJParser {
 		try {
 			reader = new BufferedReader(new InputStreamReader(new FileInputStream(openFile)));
 			
-			Toast toast = Toast.makeText(context, "Trwa parsowanie", Toast.LENGTH_SHORT);
+//			Toast toast = Toast.makeText(context, "Trwa parsowanie", Toast.LENGTH_SHORT);
 			while((line = reader.readLine()) != null) {
-				toast.show();
-				try {
+//				toast.show();
+//				try {
 					if(line.startsWith("vn")) {
 						line = line.substring(2);
 						readNormals(line.trim());
@@ -57,13 +65,16 @@ public class OBJParser {
 						readFaces(line.trim());
 					}
 					
-					model = new Model();
-					DataStructure.setModel(model);
+					DataStructure.setNumbersOfVertices(numberOfVertices);
+					DataStructure.setNumberOfNormals(numberOfNormals);
+					DataStructure.setNumberOfFaces(numberOfFaces);
+//					model = new Model();
+//					DataStructure.setModel(model);
 					
-				} catch(NullPointerException e) {
-					e.printStackTrace();
-					System.out.println("B³êdny format pliku");
-				}
+//				} catch(NullPointerException e) {
+//					e.printStackTrace();
+//					System.out.println("B³êdny format pliku");
+//				}
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -73,16 +84,17 @@ public class OBJParser {
 			System.out.println("Nie mo¿na odczytaæ pliku");
 		}
 		
-		Toast toast = Toast.makeText(context, "Parsowanie zakoñczone!", Toast.LENGTH_SHORT);
-		toast.show();
-		System.out.println("Parsowanie zakoñczone");
-		Debug.stopMethodTracing();
+//		Toast toast = Toast.makeText(context, "Parsowanie zakoñczone!", Toast.LENGTH_SHORT);
+//		toast.show();
+		long time2 = System.currentTimeMillis() - time1;
+		System.out.println("Parsowanie zakoñczone, czas: " + time2);
+		System.out.println("Vertices: " + numberOfVertices / 3 + " " + "Faces: " + numberOfFaces);
 	}
 
 	private void readFaces(String line) {
 		
-		String [] tokens = line.split("[ ]+");
-		Face face = new Face();
+		tokens = line.split("[ ]+");
+		face = new Face();
 		
 		for(String token : tokens) {
 			String fixToken = token.replaceAll("//", "/0/");
@@ -102,24 +114,78 @@ public class OBJParser {
 		}
 		System.out.println("Positions: " + face.getvPointers());
 		System.out.println("Normals: " + face.getVnPointers());
-		DataStructure.getFaces().add(face);
+		DataStructure.getFaces()[numberOfFaces++] = face;
 	}
 
 	private void readVertices(String line) {			
-		String [] tokens = line.split("[ ]+");
+		tokens = line.split("[ ]+");
+		int size = tokens.length;
 		
-		for(String token : tokens) {
-			System.out.println("Position: " + token);
-			DataStructure.getPositions().add(Float.parseFloat(token));		//d³ugi wektor (wszystkie pozycje)
+		for(int i = 0; i < size; i++) {
+			//System.out.println("Position: " + tokens[i]);
+			value = Float.parseFloat(tokens[i]);
+			DataStructure.getPositions()[numberOfVertices++] = value;		//d³ugi wektor (wszystkie pozycje)
 		}
 	}
 
 	private void readNormals(String line) {		
-		String [] tokens = line.split("[ ]+");
+		tokens = line.split("[ ]+");
+		int size = tokens.length;
 		
-		for(String token : tokens) {
-			System.out.println("Normal: " + token);
-			DataStructure.getNormals().add(Float.parseFloat(token));		//d³ugi wektor (wszystkie normalne)
+		for(int i = 0; i < size; i++) {
+			System.out.println("Normal: " + tokens[i]);
+			value = Float.parseFloat(tokens[i]);
+			DataStructure.getNormals()[numberOfNormals++] = value;		//d³ugi wektor (wszystkie normalne)
 		}
+	}
+	
+	public static float parseFloat(String f) {
+		final int len   = f.length();
+		float     ret   = 0f;         // return value
+		int       pos   = 0;          // read pointer position
+		int       part  = 0;          // the current part (int, float and sci parts of the number)
+		boolean   neg   = false;      // true if part is a negative number
+	 
+		// find start
+		while (pos < len && (f.charAt(pos) < '0' || f.charAt(pos) > '9') && f.charAt(pos) != '-' && f.charAt(pos) != '.')
+			pos++;
+	 
+		// sign
+		if (f.charAt(pos) == '-') { 
+			neg = true; 
+			pos++; 
+		}
+	 
+		// integer part
+		while (pos < len && !(f.charAt(pos) > '9' || f.charAt(pos) < '0'))
+			part = part*10 + (f.charAt(pos++) - '0');
+		ret = neg ? (float)(part*-1) : (float)part;
+	 
+		// float part
+		if (pos < len && f.charAt(pos) == '.') {
+			pos++;
+			int mul = 1;
+			part = 0;
+			while (pos < len && !(f.charAt(pos) > '9' || f.charAt(pos) < '0')) {
+				part = part*10 + (f.charAt(pos) - '0'); 
+				mul*=10; pos++;
+			}
+			ret = neg ? ret - (float)part / (float)mul : ret + (float)part / (float)mul;
+		}
+	 
+		// scientific part
+		if (pos < len && (f.charAt(pos) == 'e' || f.charAt(pos) == 'E')) {
+			pos++;
+			neg = (f.charAt(pos) == '-'); pos++;
+			part = 0;
+			while (pos < len && !(f.charAt(pos) > '9' || f.charAt(pos) < '0')) {
+				part = part*10 + (f.charAt(pos++) - '0'); 
+			}
+			if (neg)
+				ret = ret / (float)Math.pow(10, part);
+			else
+				ret = ret * (float)Math.pow(10, part);
+		}	
+		return ret;
 	}
 }

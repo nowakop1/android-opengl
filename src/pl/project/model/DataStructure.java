@@ -6,30 +6,33 @@ import java.util.Vector;
 
 public class DataStructure {
 	
-	private static Model model;
-	private static Vector<Float> positions = new Vector<Float>();
-	private static Vector<Float> textures = new Vector<Float>();
-	private static Vector<Float> normals = new Vector<Float>();
-	private static List<Face> faces = new ArrayList<Face>();
+	//private static Model model;
+	private static float [] positions = new float [64000];
+	private static Vector<Float> textures = new Vector<Float>(64000);
+	private static float [] normals = new float [64000];
+	private static Face [] faces = new Face[64000];
 	
-	public static void setModel(Model model) {
-		DataStructure.model = model;
-	}
+	private static int numberOfVertices;
+	private static int numberOfNormals;
+	private static int numberOfFaces;
 	
-	public static Model getModel() {
-		return model;
-	}
+//	public static void setModel(Model model) {
+//		DataStructure.model = model;
+//	}
+//	
+//	public static Model getModel() {
+//		return model;
+//	}
 
-	public static Vector<Float> getPositions() {
+	public static float [] getPositions() {
 		return positions;
 	}
 	
 	public static float [] getPositionsArray() {
-		int size = positions.size();
-		float [] array = new float[size];
+		float [] array = new float[numberOfVertices];
 		
-		for(int i = 0; i < size; i++)
-			array[i] = positions.get(i);
+		for(int i = 0; i < numberOfVertices; i++)
+			array[i] = positions[i];
 		
 		return array;
 	}
@@ -48,33 +51,31 @@ public class DataStructure {
 		return array;
 	}
 
-	public static Vector<Float> getNormals() {
+	public static float [] getNormals() {
 		return normals;
 	}
 	
 	public static float [] getNormalsArray() {
-		int size = normals.size();
-		float [] array = new float[size];
+		float [] array = new float[numberOfNormals];
 		
-		for(int i = 0; i < size; i++)
-			array[i] = normals.get(i);
+		for(int i = 0; i < numberOfNormals; i++)
+			array[i] = normals[i];
 		
 		return array;
 	}
 
-	public static List<Face> getFaces() {
+	public static Face [] getFaces() {
 		return faces;
 	}
 	
 	public static short [] getIndicesArray() {
-		int size = faces.size() * 3;
-		short array [] = new short[size];
+		short array [] = new short[numberOfFaces * 3];
 		Vector<Short> tmp;
 		int k = 0;
 		short tmpValue;
 		
-		for(int i = 0; i < faces.size() * 3; i += 3) {
-			tmp = faces.get(k).getvPointers();
+		for(int i = 0; i < numberOfFaces * 3; i += 3) {
+			tmp = faces[k].getvPointers();
 			for(int j = 0; j < 3; j++) {
 				tmpValue = tmp.get(j);
 				array[i + j] = --tmpValue;			//indeskowanie w talbicy od 0 (w pliku od 1)
@@ -83,5 +84,29 @@ public class DataStructure {
 		}
 				
 		return array;
+	}
+
+	public static int getNumbersOfVertices() {
+		return numberOfVertices;
+	}
+
+	public static void setNumbersOfVertices(int numbersOfVertices) {
+		DataStructure.numberOfVertices = numbersOfVertices;
+	}
+
+	public static int getNumberOfFaces() {
+		return numberOfFaces;
+	}
+
+	public static void setNumberOfFaces(int numberOfFaces) {
+		DataStructure.numberOfFaces = numberOfFaces;
+	}
+	
+	public static int getNumberOfNormals() {
+		return numberOfNormals;
+	}
+	
+	public static void setNumberOfNormals(int numberOfNormals) {
+		DataStructure.numberOfNormals = numberOfNormals;
 	}
 }
