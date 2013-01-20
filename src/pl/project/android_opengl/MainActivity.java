@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 
 public class MainActivity extends Activity implements OnItemSelectedListener{
@@ -22,31 +23,47 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
 	private String [] items;
 	private FilesManager filesManager;
 	private Model model;
+	private ProgressDialog progress;
+	private Activity activity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        activity = this;
         
         filesManager = new FilesManager();
-                
+        
         createListOfFiles();
         
         Button openFileButton = (Button) findViewById(R.id.loadMesh_button);
         
         openFileButton.setOnClickListener(new View.OnClickListener() {			
+
 			public void onClick(View v) {
 				Debug.startMethodTracing("loader");
 				
 				filesManager.openFile(filesManager.getSelectedFile());
-				OBJParser parser = new OBJParser(filesManager, getApplicationContext());
-				parser.parse();
+				final OBJParser parser = new OBJParser(filesManager, getApplicationContext());
+				
+				progress = ProgressDialog.show(activity, "£adowanie", "Trwa ³adowanie pliku...", true);
+             	new Thread() {
+             		public void run() {
+             			try {
+             				parser.parse();
+                   
+             				Intent i = new Intent();
+             				i.setClass(getBaseContext(), SceneryView.class);
+				
+             				startActivity(i);
+             				
+             				sleep(5000);
+             			} catch (Exception e) {  }
+              
+             			progress.dismiss();                                   
+         			}
+             	}.start();
 								
-				Intent i = new Intent();
-				i.setClass(getBaseContext(), SceneryView.class);
-				
-				startActivity(i);
-				
 				Log.d("openFile", filesManager.getSelectedFile());	
 			}
 		});

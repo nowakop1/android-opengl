@@ -5,11 +5,10 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import javax.microedition.khronos.opengles.GL10;
-
 import pl.project.render.MyRenderer;
 
 import android.opengl.GLES20;
+import android.util.Log;
 
 public class Model {
 	
@@ -19,35 +18,49 @@ public class Model {
 	private FloatBuffer normalBuffer;
 	private ShortBuffer indexBuffer;
 	private int numberOfFaces = DataStructure.getNumberOfFaces();
+	
 	private int mProgram;
 	private int mPositionHandle;	
 	private int mColorHandle;
-	private int mMVPMatrixHandle;
+	private int mLightPosHandle;
+	private int mNormalHandle;
 	
-	float color[] = { 0.63671875f, 0.76953125f, 0.78265625f, 1.0f };
+	private int mMVPMatrixHandle;
+	private int mMVMatrixHandle;
+	
+	float color[] = { 0.82f, 0.82f, 0.82f, 1.0f };
 	
 	private final String vertexShaderCode =
 	        "uniform mat4 uMVPMatrix;" +
+	        "uniform mat4 u_MVMatrix;" +
+	        "uniform vec3 u_LightPos;" +
 
 	        "attribute vec4 vPosition;" +
-	        "attribute vec4 a_Color;" +
+	        "uniform vec4 a_Color;" +
 	        "attribute vec3 a_Normal;" +
 	        
 	        "varying vec4 v_Color;" +
 	        
 	        "void main() {" +
+	        "  vec3 modelViewVertex = vec3(u_MVMatrix * vPosition);" +
+	        "  vec3 modelViewNormal = vec3(u_MVMatrix * vec4(a_Normal, 0.0));" +
+	        "  float distance = length(u_LightPos - modelViewVertex);" +
+	        "  vec3 lightVector = normalize(u_LightPos - modelViewVertex);" +
+	        "  float diffuse = max(dot(modelViewNormal, lightVector), 0.1);" +
+	        "  diffuse = diffuse + 0.5;" +
+//	        "  diffuse = diffuse * (100.0 / (1.0 + (0.25 * distance * distance)));" +
+			"  v_Color = a_Color * diffuse;" +
+	        
 	        "  gl_Position = uMVPMatrix * vPosition ;" +
 	        "  gl_PointSize = 5.0 ;" +
 	        "}";
 
 	private final String fragmentShaderCode =
 	    "precision mediump float;" +
-	    "uniform vec4 vColor;" +
+	    "varying vec4 v_Color;" +
+	    		
 	    "void main() {" +
-	    "  if( gl_FrontFacing == true )" +
-	    "    gl_FragColor = vColor;" +
-	    "  else" +
-	    "    gl_FragColor = vColor * 0.5;" +
+	    "  gl_FragColor = v_Color;" +
 	    "}";
 	
 	public Model() {
@@ -93,31 +106,72 @@ public class Model {
         mProgram = GLES20.glCreateProgram();
         GLES20.glAttachShader(mProgram, vertexShader);
         GLES20.glAttachShader(mProgram, fragmentShader);
+        GLES20.glBindAttribLocation(mProgram, 0, "vPosition");
+//        GLES20.glBindAttribLocation(mProgram, 1, "a_Color");
         GLES20.glLinkProgram(mProgram);
+        
+        final int[] linkStatus = new int[1];
+		GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
+
+		// If the link failed, delete the program.
+		if (linkStatus[0] == 0) 
+		{				
+			Log.e("ERROR", "Error compiling program: " + GLES20.glGetProgramInfoLog(mProgram));
+			GLES20.glDeleteProgram(mProgram);
+			mProgram = 0;
+		}
 	}
 			
-	public void draw(float [] mvpMatrix) {
+	public void draw(float [] mvpMatrix, float [] mvMatrix, float [] mLightPosInEyeSpace, int mode) {
 		
 	    GLES20.glUseProgram(mProgram);
-	    
+		    
+	    mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+	    mMVMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVMatrix");
+	    mLightPosHandle = GLES20.glGetUniformLocation(mProgram, "u_LightPos");
 	    mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
-	    GLES20.glEnableVertexAttribArray(mPositionHandle);
+	    mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
+	    mNormalHandle = GLES20.glGetAttribLocation(mProgram, "a_Normal");
 	    
-	    GLES20.glVertexAttribPointer(mPositionHandle, 3,
-	                                 GLES20.GL_FLOAT, false,
-	                                 12, vertexBuffer);
+	    GLES20.glEnableVertexAttribArray(mPositionHandle);  
+	    GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexBuffer);
+	    
+	    GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 0, normalBuffer);
+	    GLES20.glEnableVertexAttribArray(mNormalHandle);
 	    	    
-	    mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+//	    mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 	    GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 	    
-	    mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+	    GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);
+//	    for(int i = 0; i < 4; i++)
+//	    	System.out.println(mLightPosInEyeSpace[i]);
+	    
 	    GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
+	    
+	    GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
 
-	    GLES20.glDrawElements(GLES20.GL_TRIANGLES, numberOfFaces * 3, GLES20.GL_UNSIGNED_SHORT, indexBuffer);
-//	    GLES20.glDrawElements(GLES20.GL_LINES, numberOfFaces * 3, GLES20.GL_UNSIGNED_SHORT, indexBuffer);
-//	    GLES20.glDrawArrays(GLES20.GL_POINTS, 0, DataStructure.getNumbersOfVertices());
-
-	    GLES20.glDisableVertexAttribArray(mPositionHandle);
+	    switch(mode) {
+	    case 1 :
+		    GLES20.glDrawArrays(GLES20.GL_POINTS, 0, DataStructure.getNumbersOfVertices());
+	    	break;
+	    case 2 :
+		    GLES20.glDrawElements(GLES20.GL_LINE_STRIP, numberOfFaces * 3, GLES20.GL_UNSIGNED_SHORT, indexBuffer);
+	    	break;
+	    case 3 :
+	    	GLES20.glDrawElements(GLES20.GL_TRIANGLES, numberOfFaces * 3, GLES20.GL_UNSIGNED_SHORT, indexBuffer);
+	    	break;
+	    }
+	    
+	    //GLES20.glDisableVertexAttribArray(mPositionHandle);
 	}
+	
+    public static void checkGlError(String glOperation) {
+        int error;
+        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+        	GLES20.glFlush();
+            Log.e("ERROR", glOperation + ": glError " + error);
+            throw new RuntimeException(glOperation + ": glError " + error);
+        }
+    }
 
 }

@@ -16,6 +16,9 @@ public class DataStructure {
 	private static int numberOfNormals;
 	private static int numberOfFaces;
 	
+	public static float [] minValues;
+	public static float [] maxValues;
+	
 //	public static void setModel(Model model) {
 //		DataStructure.model = model;
 //	}
