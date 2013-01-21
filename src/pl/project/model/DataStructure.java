@@ -56,6 +56,10 @@ public class DataStructure {
 		return normals;
 	}
 	
+	public static void setNormals(float [] normals) {
+		DataStructure.normals = normals;
+	}
+	
 	public static float [] getNormalsArray() {
 		float [] array = new float[numberOfNormals];
 		

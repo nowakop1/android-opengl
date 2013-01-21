@@ -13,33 +13,19 @@
         android:layout_margin="16dp" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal" >
         
         <Button
             android:id="@+id/loadMesh_button"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:text="@string/loadMesh_button" />
         
-        <Button
-            android:id="@+id/addMesh_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="@string/addMesh_button" />
-        
     </LinearLayout>
-    
-    <Button
-        android:id="@+id/options_button"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="@string/options_button" />
     
     <Button
         android:id="@+id/exit_button"

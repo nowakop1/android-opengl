@@ -121,8 +121,6 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
         GLES20.glDepthFunc(GLES20.GL_LEQUAL);
         		
 		model = new Model();
-		
-		Debug.stopMethodTracing();
 	}
 
 	public void onDrawFrame(GL10 gl) {

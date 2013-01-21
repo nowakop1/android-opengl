@@ -36,9 +36,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
         
         openFileButton.setOnClickListener(new View.OnClickListener() {			
 
-			public void onClick(View v) {
-				Debug.startMethodTracing("loader");
-				
+			public void onClick(View v) {				
 				filesManager.openFile(filesManager.getSelectedFile());
 				final OBJParser parser = new OBJParser(filesManager);
 				
@@ -53,7 +51,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
 				
              				startActivity(i);
              				
-             				sleep(5000);
+//             				sleep(5000);
              			} catch (Exception e) {  }
               
              			progress.dismiss();                                   
@@ -61,6 +59,15 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
              	}.start();
 								
 				Log.d("openFile", filesManager.getSelectedFile());	
+			}
+		});
+        
+        Button exitButton = (Button) findViewById(R.id.exit_button);
+        
+        exitButton.setOnClickListener(new View.OnClickListener() {
+			
+			public void onClick(View v) {
+				finish();				
 			}
 		});
     }

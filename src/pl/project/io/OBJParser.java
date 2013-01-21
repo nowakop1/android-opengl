@@ -55,14 +55,15 @@ public class OBJParser {
 				if(line.startsWith("vn")) {
 					line = line.substring(2);
 					readNormals(line.trim());
-				} else if(line.startsWith("vt")) {
-
+//				} else if(line.startsWith("vt")) {
 				} else if(line.startsWith("v")) {
 					line = line.substring(1);
 					readVertices(line.trim());
 				} else if(line.startsWith("f")) {
 					line = line.substring(1);
 					readFaces(line.trim());
+				} else {
+					continue;
 				}
 			}	
 			

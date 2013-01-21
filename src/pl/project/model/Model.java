@@ -8,6 +8,7 @@ import java.nio.ShortBuffer;
 import pl.project.render.MyRenderer;
 
 import android.opengl.GLES20;
+import android.util.FloatMath;
 import android.util.Log;
 
 public class Model {
@@ -18,6 +19,7 @@ public class Model {
 	private FloatBuffer normalBuffer;
 	private ShortBuffer indexBuffer;
 	private int numberOfFaces = DataStructure.getNumberOfFaces();
+	private int numberOfVertices = DataStructure.getNumberOfNormals();
 	
 	private int mProgram;
 	private int mPositionHandle;	
@@ -66,6 +68,9 @@ public class Model {
 	
 	public Model() {
 		buildVertexBuffer();
+		System.out.println(DataStructure.getNumberOfNormals());
+		if(DataStructure.getNumberOfNormals() == 0)
+			normalize();
 		buildNormalsBuffer();
 		buildFaceBuffer();
 		prepare();
@@ -114,7 +119,6 @@ public class Model {
         final int[] linkStatus = new int[1];
 		GLES20.glGetProgramiv(mProgram, GLES20.GL_LINK_STATUS, linkStatus, 0);
 
-		// If the link failed, delete the program.
 		if (linkStatus[0] == 0) 
 		{				
 			Log.e("ERROR", "Error compiling program: " + GLES20.glGetProgramInfoLog(mProgram));
@@ -174,5 +178,19 @@ public class Model {
             throw new RuntimeException(glOperation + ": glError " + error);
         }
     }
-
+    
+    private void normalize() {
+    	float l;
+    	float [] v = DataStructure.getPositionsArray();
+    	
+    	for(int i = 0; i < numberOfVertices; i +=3) {
+    		l = FloatMath.sqrt(v[i] * v[i] + v[i+1] * v[i+1] + v[i+2] * v[i+2]);
+    		
+    		v[0] /= l;
+    		v[1] /= l;
+    		v[2] /= l;
+		}
+    	
+    	DataStructure.setNormals(v);
+    }
 }
