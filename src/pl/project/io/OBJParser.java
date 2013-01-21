@@ -6,22 +6,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import android.content.Context;
-import android.os.Debug;
-import android.util.Patterns;
-import android.widget.Toast;
 
 import pl.project.model.DataStructure;
 import pl.project.model.Face;
 import pl.project.model.Model;
 
 public class OBJParser {
-	
-	private Context context;
-	
+		
 	private FilesManager filesManager;
 	private File openFile;
 	
@@ -43,9 +35,8 @@ public class OBJParser {
 	
 	Model model;
 	
-	public OBJParser(FilesManager filesManager, Context context) {
+	public OBJParser(FilesManager filesManager) {
 		this.filesManager = filesManager;
-		this.context = context;
 		
 		openFile = this.filesManager.getOpenFile();
 	}
@@ -60,6 +51,7 @@ public class OBJParser {
 			reader = new BufferedReader(new InputStreamReader(new FileInputStream(openFile)));
 			
 			while((line = reader.readLine()) != null) {
+								
 				if(line.startsWith("vn")) {
 					line = line.substring(2);
 					readNormals(line.trim());
@@ -125,7 +117,7 @@ public class OBJParser {
 		
 		for(int i = 0; i < size; i++) {
 //			System.out.println("Position: " + tokens[i]);
-			value = Float.parseFloat(tokens[i]);
+			value = parseFloat(tokens[i]);
 			DataStructure.getPositions()[numberOfVertices++] = value;		//d³ugi wektor (wszystkie pozycje)
 			if(value < minValues[i])
 				minValues[i] = value;
@@ -140,8 +132,44 @@ public class OBJParser {
 		
 		for(int i = 0; i < size; i++) {
 //			System.out.println("Normal: " + tokens[i]);
-			value = Float.parseFloat(tokens[i]);
+			value = parseFloat(tokens[i]);
 			DataStructure.getNormals()[numberOfNormals++] = value;		//d³ugi wektor (wszystkie normalne)
 		}
+	}
+	
+	//w³asna metoda parseFloat
+	public static float parseFloat(String f) {
+		float result = 0.0f;
+		int position = 0;
+		int intPart = 0;
+		int floatPart = 0;
+		int mul = 1;
+		boolean negative = false;
+		int length = f.length();
+		
+		if(f.charAt(position) == '-') {
+			negative = true;
+			position++;
+		}
+		
+		while((position < length) && (f.charAt(position) != '.')) {
+			intPart = intPart * 10 + (f.charAt(position++) - '0');
+		}
+		result = (float) intPart;
+			
+		if((position < length) && (f.charAt(position) == '.')) {
+			position++;
+			
+			while(position < length) {
+				floatPart = floatPart * 10 + (f.charAt(position++) - '0');
+				mul *= 10;
+			}
+			result = (float) (intPart * mul + floatPart) / mul;
+		}
+		
+		if(negative)
+			result = result * -1;
+		
+		return result;
 	}
 }

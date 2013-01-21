@@ -47,6 +47,7 @@ public class Model {
 	        "  float distance = length(u_LightPos - modelViewVertex);" +
 	        "  vec3 lightVector = normalize(u_LightPos - modelViewVertex);" +
 	        "  float diffuse = max(dot(modelViewNormal, lightVector), 0.1);" +
+//	        "  diffuse = diffuse * (1.0 / (1.0 + (0.02 * distance)));" +
 	        "  diffuse = diffuse + 0.5;" +
 //	        "  diffuse = diffuse * (100.0 / (1.0 + (0.25 * distance * distance)));" +
 			"  v_Color = a_Color * diffuse;" +
@@ -122,7 +123,7 @@ public class Model {
 		}
 	}
 			
-	public void draw(float [] mvpMatrix, float [] mvMatrix, float [] mLightPosInEyeSpace, int mode) {
+	public void draw(float [] mvpMatrix, float [] mvMatrix, float [] mLightPos, int mode) {
 		
 	    GLES20.glUseProgram(mProgram);
 		    
@@ -148,7 +149,7 @@ public class Model {
 	    
 	    GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 	    
-	    GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
+	    GLES20.glUniform3f(mLightPosHandle, mLightPos[0], mLightPos[1], mLightPos[2]);
 
 	    switch(mode) {
 	    case 1 :

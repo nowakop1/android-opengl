@@ -1,14 +1,12 @@
 package pl.project.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 public class DataStructure {
 	
 	//private static Model model;
 	private static float [] positions = new float [64000];
-	private static Vector<Float> textures = new Vector<Float>(64000);
+//	private static Vector<Float> textures = new Vector<Float>(64000);
 	private static float [] normals = new float [64000];
 	private static Face [] faces = new Face[64000];
 	
@@ -40,19 +38,19 @@ public class DataStructure {
 		return array;
 	}
 
-	public static Vector<Float> getTextures() {
-		return textures;
-	}
-	
-	public static float [] getTexturesArray() {
-		int size = textures.size();
-		float [] array = new float[size];
-		
-		for(int i = 0; i < size; i++)
-			array[i] = textures.get(i);
-		
-		return array;
-	}
+//	public static Vector<Float> getTextures() {
+//		return textures;
+//	}
+//	
+//	public static float [] getTexturesArray() {
+//		int size = textures.size();
+//		float [] array = new float[size];
+//		
+//		for(int i = 0; i < size; i++)
+//			array[i] = textures.get(i);
+//		
+//		return array;
+//	}
 
 	public static float [] getNormals() {
 		return normals;

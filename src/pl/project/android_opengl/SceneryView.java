@@ -1,14 +1,11 @@
 package pl.project.android_opengl;
 
-import pl.project.model.DataStructure;
-import pl.project.model.Model;
 import pl.project.render.MyRenderer;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 
 public class SceneryView extends Activity {
 	

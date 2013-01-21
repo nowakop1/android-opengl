@@ -12,12 +12,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.opengl.GLSurfaceView.Renderer;
 import android.os.Debug;
-import android.os.SystemClock;
 import android.util.FloatMath;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MotionEvent;
 
 public class MyRenderer extends GLSurfaceView implements Renderer {
@@ -39,10 +34,7 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 	
 	private float rotateX = 0.0f;
 	private float rotateY = 0.0f;
-	
-	private float translateX = 0.0f;
-	private float translateY = 0.0f;
-	
+		
 	private float centerX;
 	private float centerY;
 	private float centerZ;
@@ -64,13 +56,7 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
     private final float[] mProjMatrix = new float[16];
     private final float[] mVMatrix = new float[16];
     
-    private float[] mLightModelMatrix = new float[16];
-    
-    private final float[] mLightPosInModelSpace = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
-    private final float[] mLightPosInWorldSpace = new float[4];
-    private final float[] mLightPosInEyeSpace = new float[4];
-
-	private int mPointProgramHandle;
+    private final float[] mLightPos = new float[3];
 	
 	public MyRenderer(Context context) {
 		super(context);
@@ -81,14 +67,17 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 		this.requestFocus();
 		this.setFocusableInTouchMode(true);
 		
+		//obliczenie d³ugoœci obiektu
 		lengthX = DataStructure.maxValues[0] - DataStructure.minValues[0];
 		lengthY = DataStructure.maxValues[1] - DataStructure.minValues[1];
 		lengthZ = DataStructure.maxValues[2] - DataStructure.minValues[2];
 		
+		//obliczenie punktu œrodkowego
 		centerX = (DataStructure.minValues[0] + DataStructure.maxValues[0]) / 2;
 		centerY = (DataStructure.minValues[1] + DataStructure.maxValues[1]) / 2;
 		centerZ = (DataStructure.minValues[2] + DataStructure.maxValues[2]) / 2;
 		
+		//wyznaczenie wartoœci diam
 		if(lengthX > diam)
 			diam = lengthX;
 		if(lengthY > diam)
@@ -101,6 +90,7 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 		else
 			diam = diam / 2;
 		
+		//wyznaczenie wartoœci do ustawienia perspektywy
 		left = -diam;
 		right = diam;
 		bottom = -diam;
@@ -108,7 +98,13 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 		near = diam;
 		far =  2 * diam + near;
 		
+		//domyœlny tryb - wyœwietalnie ca³ego obiektu
 		mode = 3;
+		
+		//ustawienie pozycji œwiat³a
+		mLightPos[0] = centerX + diam;
+		mLightPos[1] = centerY + diam;
+		mLightPos[2] = centerZ;
 		
 		System.out.println(lengthX + " " + lengthY + " " + lengthZ);
 		System.out.println(diam);
@@ -123,48 +119,8 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 		
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glDepthFunc(GLES20.GL_LEQUAL);
-        
-//        GLES20.glEnable (GL10.GL_LIGHTING);
-//        GLES20.glEnable (GL10.GL_LIGHT0);
-		
+        		
 		model = new Model();
-		
-		final String pointVertexShader =
-	        	"uniform mat4 u_MVPMatrix;      \n"		
-	          +	"attribute vec4 a_Position;     \n"		
-	          + "void main()                    \n"
-	          + "{                              \n"
-	          + "   gl_Position = u_MVPMatrix   \n"
-	          + "               * a_Position;   \n"
-	          + "   gl_PointSize = 5.0;         \n"
-	          + "}                              \n";
-	        
-        final String pointFragmentShader = 
-        	"precision mediump float;       \n"					          
-          + "void main()                    \n"
-          + "{                              \n"
-          + "   gl_FragColor = vec4(1.0,    \n" 
-          + "   1.0, 1.0, 1.0);             \n"
-          + "}                              \n";
-        
-        final int pointVertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
-        GLES20.glShaderSource(pointVertexShaderHandle, pointVertexShader);
-        GLES20.glCompileShader(pointVertexShaderHandle);
-        
-        final int pointFragmentShaderHandle = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
-        GLES20.glShaderSource(pointFragmentShaderHandle, pointFragmentShader);
-        GLES20.glCompileShader(pointFragmentShaderHandle);
-        
-        int vertexShader = MyRenderer.loadShader(GLES20.GL_VERTEX_SHADER, pointVertexShader);
-        int fragmentShader = MyRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, pointFragmentShader);
-
-        mPointProgramHandle = GLES20.glCreateProgram();
-        GLES20.glAttachShader(mPointProgramHandle, vertexShader);
-        GLES20.glAttachShader(mPointProgramHandle, fragmentShader);
-        
-        GLES20.glBindAttribLocation(mPointProgramHandle, 0, "a_Position");
-        
-        GLES20.glLinkProgram(mPointProgramHandle);
 		
 		Debug.stopMethodTracing();
 	}
@@ -172,42 +128,34 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 	public void onDrawFrame(GL10 gl) {
 		
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-                
+          
+        //ustawienie perspektywy
         if(width < height && width > 0) {
-//        	System.out.println(left * scale + " " + right * scale);
         	Matrix.frustumM(mProjMatrix, 0, left * scale, right * scale, (bottom / ratio) * scale, (top / ratio) * scale, near, far);
         }
         else if(width >= height && height > 0)
         	Matrix.frustumM(mProjMatrix, 0, left * ratio * scale, right * ratio * scale, bottom * scale, top * scale, near, far);
         else
         	Matrix.frustumM(mProjMatrix, 0, left, right, bottom, top, near, far);
-                
+           
+        //ustawienie kamery
         Matrix.setIdentityM(mVMatrix, 0);    
-        Matrix.setLookAtM(mVMatrix, 0, 0.0f, 0.0f, (2 * diam) + centerZ, 0.0f, 0.0f, centerZ, 0.0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mVMatrix, 0, centerX, centerY, (2 * diam) + centerZ, centerX, centerY, centerZ, 0.0f, 1.0f, 0.0f);
         
-        Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, centerX + diam, centerY + diam, centerZ);        
-        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
-        Matrix.multiplyMV(mLightPosInEyeSpace, 0, mVMatrix, 0, mLightPosInWorldSpace, 0);
-        
-        Matrix.translateM(mVMatrix, 0, centerX, centerY, centerZ);
-        
+        //rotacja obiektu
+        Matrix.translateM(mVMatrix, 0, centerX, centerY, centerZ);        
         Matrix.rotateM(mVMatrix, 0, rotateX, 0.0f, 1.0f, 0);
         if(lengthY >= lengthX)
         	Matrix.rotateM(mVMatrix, 0, rotateY, 1.0f, 0.0f, 0.0f);
         else
-        	Matrix.rotateM(mVMatrix, 0, -rotateY, 0.0f, 0.0f, 1.0f);
-        
+        	Matrix.rotateM(mVMatrix, 0, -rotateY, 0.0f, 0.0f, 1.0f);        
         Matrix.translateM(mVMatrix, 0, -centerX, -centerY, -centerZ);
         
+        //wymno¿enie macierzy widoku i perspektywy
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
         
         //rysowanie obiektu
-//        System.out.println(mode);
-        model.draw(mMVPMatrix, mVMatrix, mLightPosInEyeSpace, mode);
-        
-        GLES20.glUseProgram(mPointProgramHandle);
-        drawLight();
+        model.draw(mMVPMatrix, mVMatrix, mLightPos, mode);
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -221,22 +169,7 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
         
         Matrix.setIdentityM(mProjMatrix, 0);
 	}
-	
-	private void drawLight() {
-		final int pointMVPMatrixHandle = GLES20.glGetUniformLocation(mPointProgramHandle, "u_MVPMatrix");
-		final int pointPositionHandle = GLES20.glGetAttribLocation(mPointProgramHandle, "a_Position");
 		
-		GLES20.glVertexAttrib3f(pointPositionHandle, mLightPosInModelSpace[0], mLightPosInModelSpace[1], mLightPosInModelSpace[2]);
-
-		GLES20.glDisableVertexAttribArray(pointPositionHandle);
-		
-//		Matrix.multiplyMM(mMVPMatrix, 0, mVMatrix, 0, mLightModelMatrix, 0);
-//		Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mMVPMatrix, 0);
-		GLES20.glUniformMatrix4fv(pointMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-		
-		GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
-	}
-	
     public static int loadShader(int type, String shaderCode){
 
         int shader = GLES20.glCreateShader(type);

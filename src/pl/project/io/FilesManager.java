@@ -18,9 +18,7 @@ public class FilesManager {
 	}
 	
 	public String [] getListOfFiles() {
-		/*
-		 * TODO
-		 */
+
 		String [] list = null;
 		
 		if(isStorageAvailable) {		

@@ -2,9 +2,6 @@ package pl.project.android_opengl;
 
 import pl.project.io.FilesManager;
 import pl.project.io.OBJParser;
-import pl.project.model.Model;
-import pl.project.render.MyRenderer;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Debug;
 import android.util.Log;
@@ -22,7 +19,6 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
 	
 	private String [] items;
 	private FilesManager filesManager;
-	private Model model;
 	private ProgressDialog progress;
 	private Activity activity;
 
@@ -44,7 +40,7 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
 				Debug.startMethodTracing("loader");
 				
 				filesManager.openFile(filesManager.getSelectedFile());
-				final OBJParser parser = new OBJParser(filesManager, getApplicationContext());
+				final OBJParser parser = new OBJParser(filesManager);
 				
 				progress = ProgressDialog.show(activity, "£adowanie", "Trwa ³adowanie pliku...", true);
              	new Thread() {
