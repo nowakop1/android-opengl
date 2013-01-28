@@ -41,7 +41,7 @@ public class OBJParser {
 		openFile = this.filesManager.getOpenFile();
 	}
 	
-	public void parse() {
+	public boolean parse() {
 		long time1 = System.currentTimeMillis();
 		
 		BufferedReader reader;
@@ -55,7 +55,7 @@ public class OBJParser {
 				if(line.startsWith("vn")) {
 					line = line.substring(2);
 					readNormals(line.trim());
-//				} else if(line.startsWith("vt")) {
+				} else if(line.startsWith("vt")) {
 				} else if(line.startsWith("v")) {
 					line = line.substring(1);
 					readVertices(line.trim());
@@ -85,6 +85,8 @@ public class OBJParser {
 		long time2 = System.currentTimeMillis() - time1;
 		System.out.println("Parsowanie zakoñczone, czas: " + time2);
 		System.out.println("Vertices: " + numberOfVertices / 3 + " " + "Faces: " + numberOfFaces);
+		
+		return true;
 	}
 
 	private void readFaces(String line) {
@@ -109,7 +111,7 @@ public class OBJParser {
 		}
 //		System.out.println("Positions: " + face.getvPointers());
 //		System.out.println("Normals: " + face.getVnPointers());
-		DataStructure.getFaces()[numberOfFaces++] = face;
+		DataStructure.getFaces().add(numberOfFaces++, face);
 	}
 
 	private void readVertices(String line) {
@@ -119,7 +121,7 @@ public class OBJParser {
 		for(int i = 0; i < size; i++) {
 //			System.out.println("Position: " + tokens[i]);
 			value = parseFloat(tokens[i]);
-			DataStructure.getPositions()[numberOfVertices++] = value;		//d³ugi wektor (wszystkie pozycje)
+			DataStructure.getPositions().add(numberOfVertices++, value);		//d³ugi wektor (wszystkie pozycje)
 			if(value < minValues[i])
 				minValues[i] = value;
 			else if(value > maxValues[i])
@@ -134,7 +136,7 @@ public class OBJParser {
 		for(int i = 0; i < size; i++) {
 //			System.out.println("Normal: " + tokens[i]);
 			value = parseFloat(tokens[i]);
-			DataStructure.getNormals()[numberOfNormals++] = value;		//d³ugi wektor (wszystkie normalne)
+			DataStructure.getNormals().add(numberOfNormals++, value);		//d³ugi wektor (wszystkie normalne)
 		}
 	}
 	

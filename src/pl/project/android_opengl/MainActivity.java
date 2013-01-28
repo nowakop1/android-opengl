@@ -45,13 +45,14 @@ public class MainActivity extends Activity implements OnItemSelectedListener{
              		public void run() {
              			try {
              				parser.parse();
+             				System.out.println("Parsowanie - zakoñczone");
                    
              				Intent i = new Intent();
              				i.setClass(getBaseContext(), SceneryView.class);
 				
              				startActivity(i);
              				
-//             				sleep(5000);
+             				sleep(5000);
              			} catch (Exception e) {  }
               
              			progress.dismiss();                                   

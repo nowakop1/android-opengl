@@ -11,7 +11,6 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.opengl.GLSurfaceView.Renderer;
-import android.os.Debug;
 import android.util.FloatMath;
 import android.view.MotionEvent;
 
@@ -34,6 +33,9 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 	
 	private float rotateX = 0.0f;
 	private float rotateY = 0.0f;
+	
+	private float translateX = 0.0f;
+	private float translateY = 0.0f;
 		
 	private float centerX;
 	private float centerY;
@@ -126,7 +128,7 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 	public void onDrawFrame(GL10 gl) {
 		
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-          
+        
         //ustawienie perspektywy
         if(width < height && width > 0) {
         	Matrix.frustumM(mProjMatrix, 0, left * scale, right * scale, (bottom / ratio) * scale, (top / ratio) * scale, near, far);
@@ -138,7 +140,7 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
            
         //ustawienie kamery
         Matrix.setIdentityM(mVMatrix, 0);    
-        Matrix.setLookAtM(mVMatrix, 0, centerX, centerY, (2 * diam) + centerZ, centerX, centerY, centerZ, 0.0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(mVMatrix, 0, centerX + translateX, centerY + translateY, (2 * diam) + centerZ, centerX + translateX, centerY + translateY, centerZ, 0.0f, 1.0f, 0.0f);
         
         //rotacja obiektu
         Matrix.translateM(mVMatrix, 0, centerX, centerY, centerZ);        
@@ -146,8 +148,12 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
         if(lengthY >= lengthX)
         	Matrix.rotateM(mVMatrix, 0, rotateY, 1.0f, 0.0f, 0.0f);
         else
-        	Matrix.rotateM(mVMatrix, 0, -rotateY, 0.0f, 0.0f, 1.0f);        
+        	Matrix.rotateM(mVMatrix, 0, -rotateY, 0.0f, 0.0f, 1.0f); 
+        
+//        Matrix.translateM(mVMatrix, 0, translateX, translateY, centerZ);
+        
         Matrix.translateM(mVMatrix, 0, -centerX, -centerY, -centerZ);
+        
         
         //wymno¿enie macierzy widoku i perspektywy
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
@@ -203,7 +209,7 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
        	 	y = event.getY(0) - event.getY(1);
        	 	
 			oldDist = FloatMath.sqrt(x * x + y * y) + 10000;
-       	 	       	 	
+						
        	 	break;
        	 	
 		case MotionEvent.ACTION_MOVE :
@@ -224,32 +230,56 @@ public class MyRenderer extends GLSurfaceView implements Renderer {
 	        	y = event.getY(0) - event.getY(1);
 	        	 
 	        	float newDist = FloatMath.sqrt(x * x + y * y) + 10000;
-	        	float newScale = scale;
 	        	
-	        	//zauwa¿alna odleg³oœæ miêdzy 2 wskaŸnikami
-	        	if(newDist > 10.0f) {
-	        		newScale = scale * ((oldDist / newDist));
-	        		
-	        		//nie powiêkszam dalej
-	        		if(newScale <= 0.1f) 
-	        			scale = 0.1f;
-	        		//nie zmniejszam dalej
-	        		else if(newScale >= 2.0f)
-	        			scale = 2.0f;
-	        		else
-	        			scale = newScale;
-	        	}
-	        	 
-//		        	System.out.println(Math.abs(oldDist - newDist));		        	
-//		        	System.out.println(scale);
-			}				
+	        	//wskaŸniki siê rozszerzaj¹ - zoom
+	        	if((Math.abs(newDist - oldDist) > 20.0f)) {
+	        		zoom(newDist);
+	        	} 
+	        	//wskaŸniki siê nie rozszerzaj¹ - przesuwanie
+	        	else 
+	        		move(event.getX(), event.getY());
+			}
+			
 			break;
 		}		
         
 		oldX = event.getX();
 		oldY = event.getY();
-                                  
+        		
      	return true;
+	}
+	
+	private void zoom(float newDist) {
+		float newScale;
+		
+		newScale = scale * ((oldDist / newDist));
+		
+		//nie powiêkszam dalej
+		if(newScale <= 0.1f) 
+			scale = 0.1f;
+		//nie zmniejszam dalej
+		else if(newScale >= 2.0f)
+			scale = 2.0f;
+		else
+			scale = newScale;		
+	}
+	
+	private void move(float x, float y) {
+		float dx = x - oldX;
+        float dy = y - oldY;
+        
+        if(Math.abs(dx) > 1.0) {
+        	if(dx > 0)
+        		translateX -= (scale * diam) / 50;
+        	else
+        		translateX += (scale * diam) / 50;
+        }
+        if(Math.abs(dy) > 1.0) {
+        	if(dy > 0)
+        		translateY += (scale * diam) / 50;
+        	else
+        		translateY -= (scale * diam) / 50;
+        }
 	}
 		
 	public void setMode(int mode) {

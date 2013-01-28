@@ -30,7 +30,12 @@ public class Model {
 	private int mMVPMatrixHandle;
 	private int mMVMatrixHandle;
 	
+	short zero = 0;
+	short six = 6;
+	short four = 4;
+	
 	float color[] = { 0.82f, 0.82f, 0.82f, 1.0f };
+	float color_black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	
 	private final String vertexShaderCode =
 	        "uniform mat4 uMVPMatrix;" +
@@ -49,9 +54,7 @@ public class Model {
 	        "  float distance = length(u_LightPos - modelViewVertex);" +
 	        "  vec3 lightVector = normalize(u_LightPos - modelViewVertex);" +
 	        "  float diffuse = max(dot(modelViewNormal, lightVector), 0.1);" +
-//	        "  diffuse = diffuse * (1.0 / (1.0 + (0.02 * distance)));" +
 	        "  diffuse = diffuse + 0.5;" +
-//	        "  diffuse = diffuse * (100.0 / (1.0 + (0.25 * distance * distance)));" +
 			"  v_Color = a_Color * diffuse;" +
 	        
 	        "  gl_Position = uMVPMatrix * vPosition ;" +
@@ -74,8 +77,9 @@ public class Model {
 		buildNormalsBuffer();
 		buildFaceBuffer();
 		prepare();
+		DataStructure.free();
 	}
-				
+			
 	private void buildFaceBuffer() {
 		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(
 				numberOfFaces * 3 * 2);
@@ -138,8 +142,8 @@ public class Model {
 	    mColorHandle = GLES20.glGetUniformLocation(mProgram, "a_Color");
 	    mNormalHandle = GLES20.glGetAttribLocation(mProgram, "a_Normal");
 	    
-	    GLES20.glEnableVertexAttribArray(mPositionHandle);  
 	    GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexBuffer);
+	    GLES20.glEnableVertexAttribArray(mPositionHandle);  
 	    
 	    GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 0, normalBuffer);
 	    GLES20.glEnableVertexAttribArray(mNormalHandle);
@@ -147,20 +151,22 @@ public class Model {
 //	    mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 	    GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 	    
-	    GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);
-//	    for(int i = 0; i < 4; i++)
-//	    	System.out.println(mLightPosInEyeSpace[i]);
-	    
+	    GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mvMatrix, 0);	    
 	    GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 	    
 	    GLES20.glUniform3f(mLightPosHandle, mLightPos[0], mLightPos[1], mLightPos[2]);
 
 	    switch(mode) {
 	    case 1 :
-		    GLES20.glDrawArrays(GLES20.GL_POINTS, 0, DataStructure.getNumbersOfVertices());
+		    GLES20.glDrawArrays(GLES20.GL_POINTS, 0, DataStructure.getNumbersOfVertices() / 3);
 	    	break;
 	    case 2 :
-		    GLES20.glDrawElements(GLES20.GL_LINE_STRIP, numberOfFaces * 3, GLES20.GL_UNSIGNED_SHORT, indexBuffer);
+	    	GLES20.glUniform4fv(mColorHandle, 1, color_black, 0);
+	    	GLES20.glDrawElements(GLES20.GL_TRIANGLES, numberOfFaces * 3, GLES20.GL_UNSIGNED_SHORT, indexBuffer);
+	    	GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+	    	GLES20.glLineWidth(2);
+//	    	GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, DataStructure.getNumbersOfVertices() / 3);
+	    	GLES20.glDrawElements(GLES20.GL_LINE_STRIP, numberOfFaces * 3, GLES20.GL_UNSIGNED_SHORT, indexBuffer);
 	    	break;
 	    case 3 :
 	    	GLES20.glDrawElements(GLES20.GL_TRIANGLES, numberOfFaces * 3, GLES20.GL_UNSIGNED_SHORT, indexBuffer);
